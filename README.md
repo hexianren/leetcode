@@ -161,7 +161,7 @@ special options:
    release the diffData for update oldData.  
    `note:` create_diff() out **uncompressed** diffData;     
     you can compressed it by yourself or use **create_compressed_diff()**/patch_decompress() create **compressed** diffData;   
- 聽 聽if your file size very large or request faster and less memory requires, you can use **create_compressed_diff_stream()**/patch_decompress(). 
+    if your file size very large or request faster and less memory requires, you can use **create_compressed_diff_stream()**/patch_decompress(). 
    
 *  bool **patch**(out newData,oldData,diffData);
    
@@ -184,13 +184,13 @@ system: macOS10.12.6, compiler: xcode8.3.3 x64, CPU: i7 2.5G(turbo3.7G,6MB L3 ca
    (purge file cache before every test)
 ```
 HDiffPatch2.4 hdiffz run by: -m -c-bzip2-9|-c-lzma-7-4m|-c-zlib-9 oldFile newFile outDiffFile
- 聽 聽 聽 聽      hpatchz run by: -m oldFile diffFile outNewFile
+              hpatchz run by: -m oldFile diffFile outNewFile
 BsDiff4.3 with bzip2 and all data in memory;
           (NOTE: when compiling BsDiff4.3-x64, suffix string index type int64 changed to int32, 
             faster and memroy requires to be halved!)   
 =======================================================================================================
- 聽 聽 聽 聽 Program 聽 聽 聽 聽 聽 聽 聽 Uncompressed Compressed Compressed  BsDiff             hdiffz
-(newVersion<--oldVersion) 聽 聽 聽 聽 聽 (tar) 聽 聽 (bzip2) 聽  (lzma) 聽  (bzip2) 聽  (bzip2   lzma     zlib)
+         Program               Uncompressed Compressed Compressed  BsDiff             hdiffz
+(newVersion<--oldVersion)           (tar)     (bzip2)    (lzma)    (bzip2)    (bzip2   lzma     zlib)
 -------------------------------------------------------------------------------------------------------
 gcc-src-4.8.0 <--4.7.0            552775680  86438193   64532384  11759496   8433260  7288783  9445004
 -------------------------------------------------------------------------------------------------------
@@ -198,7 +198,7 @@ Average Compression                 100.00%    31.76%     28.47%     6.63%     5
 =======================================================================================================
 
 =======================================================================================================
- 聽 Program 聽 run time(Second)   memory(MB) 聽 聽    run time(Second) 聽 聽          memory(MB)
+   Program   run time(Second)   memory(MB)        run time(Second)              memory(MB)
                BsDiff hdiffz  BsDiff  hdiffz   BsPatch       hpatchz        BsPatch     hpatchz 
               (bzip2)(bzip2)  (bzip2)(bzip2)   (bzip2) (bzip2  lzma  zlib)  (bzip2) (bzip2 lzma zlib)
 -------------------------------------------------------------------------------------------------------
@@ -211,13 +211,13 @@ Average        100%   28.9%    100%   71.5%      100%   52.3% 29.9% 21.3%      1
 ## HDiffPatch vs xdelta:
 ```
 HDiffPatch2.4 hdiffz run by: -s-128 -c-bzip2-9 oldFile newFile outDiffFile
- 聽 聽 聽 聽      hpatchz run by: -s-4m oldFile diffFile outNewFile
+              hpatchz run by: -s-4m oldFile diffFile outNewFile
 xdelta3.1 diff run by: -e -s old_file new_file delta_file   
           patch run by: -d -s old_file delta_file decoded_new_file
          (NOTE fix: xdelta3.1 diff "gcc-src..." fail, add -B 530000000 diff ok,
            out 14173073B and used 1070MB memory!)
 =======================================================================================================
- 聽 Program 聽            diff       run time(Second)  memory(MB) 聽  patch run time(Second) memory(MB)
+   Program              diff       run time(Second)  memory(MB)    patch run time(Second) memory(MB)
                   xdelta3   hdiffz   xdelta3 hdiffz xdelta3 hdiffz  xdelta3  hpatchz   xdelta3 hpatchz
 -------------------------------------------------------------------------------------------------------
 apache-maven...   116265     83408     0.16   0.13     65    11       0.07    0.06        12      6
@@ -234,13 +234,13 @@ Average           12.18%    7.81%     100%  79.0%     100%  15.5%      100%  169
 =======================================================================================================
 
 HDiffPatch2.4 hdiffz run by: -s-64 -c-lzma-7-4m  oldFile newFile outDiffFile
- 聽 聽 聽 聽      hpatchz run by: -s-4m oldFile diffFile outNewFile
+              hpatchz run by: -s-4m oldFile diffFile outNewFile
 xdelta3.1 diff run by: -S lzma -9 -s old_file new_file delta_file   
           patch run by: -d -s old_file delta_file decoded_new_file
           (NOTE fix: xdelta3.1 diff "gcc-src..." fail, add -B 530000000 diff ok,
             out 11787978B and used 2639MB memory.)
 =======================================================================================================
- 聽 Program 聽            diff       run time(Second)  memory(MB) 聽  patch run time(Second) memory(MB)
+   Program              diff       run time(Second)  memory(MB)    patch run time(Second) memory(MB)
                   xdelta3   hdiffz   xdelta3 hdiffz xdelta3 hdiffz  xdelta3  hpatchz   xdelta3 hpatchz
 -------------------------------------------------------------------------------------------------------
 apache-maven...    98434     83668     0.37   0.29    220    24       0.04    0.06         12     5
