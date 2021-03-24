@@ -1,263 +1,162 @@
-# [HDiffPatch](https://github.com/sisong/HDiffPatch)
-[![release](https://img.shields.io/badge/release-v3.0.8-blue.svg)](https://github.com/sisong/HDiffPatch/releases) 
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/sisong/HDiffPatch/blob/master/LICENSE) 
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)](https://github.com/sisong/HDiffPatch/pulls)
-[![+issue Welcome](https://img.shields.io/github/issues-raw/sisong/HDiffPatch?color=green&label=%2Bissue%20welcome)](https://github.com/sisong/HDiffPatch/issues)   
+Introduction
+-------------------------
 
-[![Build Status](https://travis-ci.org/sisong/HDiffPatch.svg?branch=master)](https://travis-ci.org/sisong/HDiffPatch) 
-[![Build status](https://ci.appveyor.com/api/projects/status/t9ow8dft8lt898cv/branch/master?svg=true)](https://ci.appveyor.com/project/sisong/hdiffpatch/branch/master)   
+lzbench is an in-memory benchmark of open-source LZ77/LZSS/LZMA compressors. It joins all compressors into a single exe. 
+At the beginning an input file is read to memory. 
+Then all compressors are used to compress and decompress the file and decompressed file is verified. 
+This approach has a big advantage of using the same compiler with the same optimizations for all compressors. 
+The disadvantage is that it requires source code of each compressor (therefore Slug or lzturbo are not included).
 
-a C\C++ library and command-line tools for binary data Diff & Patch; fast and create small delta/differential; support large files and directory(folder) and limit memory requires both diff & patch.    
-   
-( update Android Apk? Jar or Zip file diff & patch? try [ApkDiffPatch](https://github.com/sisong/ApkDiffPatch)! )   
-( NOTE: This library does not deal with file metadata, such as file last wirte time, permissions, link file, etc... To this library, a file is just as a stream of bytes; You can extend this library or use other tools. )   
-   
----
-## Releases/Binaries
-[Download from last release](https://github.com/sisong/HDiffPatch/releases) : Command line app for Windows , Linux , MacOS; and .so .java for Android.   
+|Status   |
+|---------|
+| [![Build Status][travisMasterBadge]][travisLink] [![Build status][AppveyorMasterBadge]][AppveyorLink]  |
 
-## diff command line usage:   
-diff    usage: **hdiffz** [options] **oldPath newPath outDiffFile**   
-test    usage: **hdiffz**    -t     **oldPath newPath testDiffFile**   
-resave  usage: **hdiffz** [-c-...]  **diffFile outDiffFile**   
-get  manifest: **hdiffz** [-g#...] [-C-checksumType] **inputPath -M#outManifestTxtFile**   
-manifest diff: **hdiffz** [options] **-M-old#oldManifestFile -M-new#newManifestFile oldPath newPath outDiffFile**   
+[travisMasterBadge]: https://travis-ci.org/inikep/lzbench.svg?branch=master "Continuous Integration test suite"
+[travisLink]: https://travis-ci.org/inikep/lzbench
+[AppveyorMasterBadge]: https://ci.appveyor.com/api/projects/status/u7kjj8ino4gww40v/branch/master?svg=true "Visual test suite"
+[AppveyorLink]: https://ci.appveyor.com/project/inikep/lzbench
+
+
+Usage
+-------------------------
+
 ```
-  oldPath newPath inputPath can be file or directory(folder),
-  oldPath can empty, and input parameter ""
-memory options:
-  -m[-matchScore]
-      DEFAULT; all file load into Memory; best diffFileSize;
-      requires (newFileSize+ oldFileSize*5(or *9 when oldFileSize>=2GB))+O(1)
-        bytes of memory;
-      matchScore>=0, DEFAULT -m-6, recommended bin: 0--4 text: 4--9 etc...
-  -s[-matchBlockSize]
-      all file load as Stream; fast;
-      requires O(oldFileSize*16/matchBlockSize+matchBlockSize*5)bytes of memory;
-      matchBlockSize>=4, DEFAULT -s-64, recommended 16,32,48,1k,64k,1m etc...
-special options:
-  -p-parallelThreadNumber
-    if parallelThreadNumber>1 then open multi-thread Parallel mode;
-    DEFAULT -p-4; requires more and more memory!
-  -c-compressType[-compressLevel]
-      set outDiffFile Compress type & level, DEFAULT uncompress;
-      for resave diffFile,recompress diffFile to outDiffFile by new set;
-      support compress type & level:
-       (re. https://github.com/sisong/lzbench/blob/master/lzbench171_sorted.md )
-        -c-zlib[-{1..9}]                DEFAULT level 9
-        -c-pzlib[-{1..9}]               DEFAULT level 6
-            support run by multi-thread parallel, fast!
-            WARNING: code not compatible with it compressed by -c-zlib!
-              and code size may be larger than if it compressed by -c-zlib. 
-        -c-bzip2[-{1..9}]               (or -bz2) DEFAULT level 9
-        -c-pbzip2[-{1..9}]              (or -pbz2) DEFAULT level 8
-            support run by multi-thread parallel, fast!
-            WARNING: code not compatible with it compressed by -c-bzip2!
-               and code size may be larger than if it compressed by -c-bzip2.
-        -c-lzma[-{0..9}[-dictSize]]     DEFAULT level 7
-            dictSize can like 4096 or 4k or 4m or 128m etc..., DEFAULT 8m
-            support run by 2-thread parallel.
-        -c-lzma2[-{0..9}[-dictSize]]    DEFAULT level 7
-            dictSize can like 4096 or 4k or 4m or 128m etc..., DEFAULT 8m
-            support run by multi-thread parallel, fast!
-            WARNING: code not compatible with it compressed by -c-lzma!
-  -C-checksumType
-      set outDiffFile Checksum type for directory diff, DEFAULT -C-fadler64;
-      (if need checksum for diff between two files, add -D)
-      support checksum type:
-        -C-no                   no checksum
-        -C-crc32
-        -C-fadler64             DEFAULT
-  -n-maxOpenFileNumber
-      limit Number of open files at same time when stream directory diff;
-      maxOpenFileNumber>=8, DEFAULT -n-48, the best limit value by different
-        operating system.
-  -g#ignorePath[#ignorePath#...]
-      set iGnore path list when Directory Diff; ignore path list such as:
-        #.DS_Store#desktop.ini#*thumbs*.db#.git*#.svn/#cache_*/00*11/*.tmp
-      # means separator between names; (if char # in name, need write #: )
-      * means can match any chars in name; (if char * in name, need write *: );
-      / at the end of name means must match directory;
-  -g-old#ignorePath[#ignorePath#...]
-      set iGnore path list in oldPath when Directory Diff;
-      if oldFile can be changed, need add it in old ignore list;
-  -g-new#ignorePath[#ignorePath#...]
-      set iGnore path list in newPath when Directory Diff;
-      in general, new ignore list should is empty;
-  -M#outManifestTxtFile
-      create a Manifest file for inputPath; it is a text file, saved infos of
-      all files and directoriy list in inputPath; this file while be used in 
-      manifest diff, support re-checksum data by manifest diff;
-      can be used to protect historical versions be modified!
-  -M-old#oldManifestFile
-      oldManifestFile is created from oldPath; if no oldPath not need -M-old;
-  -M-new#newManifestFile
-      newManifestFile is created from newPath;
-  -D  force run Directory diff between two files; DEFAULT (no -D) run 
-      directory diff need oldPath or newPath is directory.
-  -d  Diff only, do't run patch check, DEFAULT run patch check.
-  -t  Test only, run patch check, patch(oldPath,testDiffFile)==newPath ? 
-  -f  Force overwrite, ignore write path already exists;
-      DEFAULT (no -f) not overwrite and then return error;
-      if used -f and write path is exist directory, will always return error.
-  -o  DEPRECATED; Original diff, unsupport run with -s -c -C -D;
-      compatible with "diff_demo.cpp",
-      diffFile must patch by "patch_demo.c" or "hpatchz -o ..."
-  -h or -?
-      output Help info (this usage).
-  -v  output Version info.
-```
-   
-## patch command line usage:   
-patch usage: **hpatchz** [options] **oldPath diffFile outNewPath**   
-create  SFX: **hpatchz** [-X-exe#selfExecuteFile] **diffFile -X#outSelfExtractArchive**   
-run     SFX: **selfExtractArchive** [options] **oldPath -X outNewPath**   
-extract SFX: **selfExtractArchive**    (same as: selfExtractArchive -f "" -X "./")
-```
-  ( if oldPath is empty input parameter "" )
-memory options:
-  -m  oldPath all loaded into Memory;
-      requires (oldFileSize+ 4*decompress stream size)+O(1) bytes of memory.
-  -s[-cacheSize] 
-      DEFAULT -s-64m; oldPath loaded as Stream;
-      requires (cacheSize+ 4*decompress stream size)+O(1) bytes of memory;
-      cacheSize can like 262144 or 256k or 512m or 2g etc....
-special options:
-  -C-checksumSets
-      set Checksum data for directory patch, DEFAULT -C-new-copy;
-      checksumSets support (can choose multiple):
-        -C-diff         checksum diffFile;
-        -C-old          checksum old reference files;
-        -C-new          checksum new files edited from old reference files;
-        -C-copy         checksum new files copy from old same files;
-        -C-no           no checksum;
-        -C-all          same as: -C-diff-old-new-copy;
-  -n-maxOpenFileNumber
-      limit Number of open files at same time when stream directory patch;
-      maxOpenFileNumber>=8, DEFAULT -n-24, the best limit value by different
-        operating system.
-  -f  Force overwrite, ignore write path already exists;
-      DEFAULT (no -f) not overwrite and then return error;
-      support oldPath outNewPath same path!(patch to tempPath and overwrite old)
-      if used -f and outNewPath is exist file:
-        if patch output file, will overwrite;
-        if patch output directory, will always return error;
-      if used -f and outNewPath is exist directory:
-        if patch output file, will always return error;
-        if patch output directory, will overwrite, but not delete
-          needless existing files in directory.
-  -o  DEPRECATED; Original patch; compatible with "patch_demo.c",
-      diffFile must created by "diff_demo.cpp" or "hdiffz -o ..."
-  -h or -?
-      output Help info (this usage).
-  -v  output Version info.
-```
-   
----
-## library API usage:
+usage: lzbench [options] input [input2] [input3]
 
-*  **create_diff**(newData,oldData,out diffData);
-   
-   release the diffData for update oldData.  
-   `note:` create_diff() out **uncompressed** diffData;     
-    you can compressed it by yourself or use **create_compressed_diff()**/patch_decompress() create **compressed** diffData;   
-    if your file size very large or request faster and less memory requires, you can use **create_compressed_diff_stream()**/patch_decompress(). 
-   
-*  bool **patch**(out newData,oldData,diffData);
-   
-   ok , get the newData. 
+where [input] is a file or a directory and [options] are:
+ -b#   set block/chunk size to # KB (default = MIN(filesize,1747626 KB))
+ -c#   sort results by column # (1=algname, 2=ctime, 3=dtime, 4=comprsize)
+ -e#   #=compressors separated by '/' with parameters specified after ',' (deflt=fast)
+ -iX,Y set min. number of compression and decompression iterations (default = 1, 1)
+ -j    join files in memory but compress them independently (for many small files)
+ -l    list of available compressors and aliases
+ -m#   set memory limit to # MB (default = no limit)
+ -o#   output text format 1=Markdown, 2=text, 3=text+origSize, 4=CSV (default = 2)
+ -p#   print time for all iterations: 1=fastest 2=average 3=median (default = 1)
+ -r    operate recursively on directories
+ -s#   use only compressors with compression speed over # MB (default = 0 MB)
+ -tX,Y set min. time in seconds for compression and decompression (default = 1, 2)
+ -v    disable progress information
+ -x    disable real-time process priority
+ -z    show (de)compression times instead of speed
 
----
-*  **patch()** runs in O(oldSize+newSize) time , and requires (oldSize+newSize+diffSize)+O(1) bytes of memory;     
-   **patch_stream()** requires O(1) bytes of memory;   
-   **patch_decompress()** requires (4\*decompress stream size)+O(1) bytes of memory.   
-   
-   **create_diff()** & **create_compressed_diff()** runs in O(oldSize+newSize) time , and if oldSize \< 2G Byte then requires oldSize\*5+newSize+O(1) bytes of memory; if oldSize \>= 2G Byte then requires oldSize\*9+newSize+O(1) bytes of memory;  
-   **create_compressed_diff_stream()** requires O(oldSize\*16/kMatchBlockSize+kMatchBlockSize\*5) bytes of memory.
-
----
-*  **dir_diff()** & **dir patch APIs** read source code;   
-   
----
-## HDiffPatch vs BsDiff:
-system: macOS10.12.6, compiler: xcode8.3.3 x64, CPU: i7 2.5G(turbo3.7G,6MB L3 cache),SSD Disk,Memroy:8G*2 DDR3 1600MHz   
-   (purge file cache before every test)
+Example usage:
+  lzbench -ezstd filename = selects all levels of zstd
+  lzbench -ebrotli,2,5/zstd filename = selects levels 2 & 5 of brotli and zstd
+  lzbench -t3 -u5 fname = 3 sec compression and 5 sec decompression loops
+  lzbench -t0 -u0 -i3 -j5 -ezstd fname = 3 compression and 5 decompression iter.
+  lzbench -t0u0i3j5 -ezstd fname = the same as above with aggregated parameters
 ```
-HDiffPatch2.4 hdiffz run by: -m -c-bzip2-9|-c-lzma-7-4m|-c-zlib-9 oldFile newFile outDiffFile
-              hpatchz run by: -m oldFile diffFile outNewFile
-BsDiff4.3 with bzip2 and all data in memory;
-          (NOTE: when compiling BsDiff4.3-x64, suffix string index type int64 changed to int32, 
-            faster and memroy requires to be halved!)   
-=======================================================================================================
-         Program               Uncompressed Compressed Compressed  BsDiff             hdiffz
-(newVersion<--oldVersion)           (tar)     (bzip2)    (lzma)    (bzip2)    (bzip2   lzma     zlib)
--------------------------------------------------------------------------------------------------------
-gcc-src-4.8.0 <--4.7.0            552775680  86438193   64532384  11759496   8433260  7288783  9445004
--------------------------------------------------------------------------------------------------------
-Average Compression                 100.00%    31.76%     28.47%     6.63%     5.58%    5.01%    5.86%
-=======================================================================================================
 
-=======================================================================================================
-   Program   run time(Second)   memory(MB)        run time(Second)              memory(MB)
-               BsDiff hdiffz  BsDiff  hdiffz   BsPatch       hpatchz        BsPatch     hpatchz 
-              (bzip2)(bzip2)  (bzip2)(bzip2)   (bzip2) (bzip2  lzma  zlib)  (bzip2) (bzip2 lzma zlib)
--------------------------------------------------------------------------------------------------------
-gcc-src...     366    69       4420   3030       7.9     3.5   2.1   1.85     1020    518   517   504
--------------------------------------------------------------------------------------------------------
-Average        100%   28.9%    100%   71.5%      100%   52.3% 29.9% 21.3%      100%  52.3% 50.3% 45.5%
-=======================================================================================================
-```
-   
-## HDiffPatch vs xdelta:
-```
-HDiffPatch2.4 hdiffz run by: -s-128 -c-bzip2-9 oldFile newFile outDiffFile
-              hpatchz run by: -s-4m oldFile diffFile outNewFile
-xdelta3.1 diff run by: -e -s old_file new_file delta_file   
-          patch run by: -d -s old_file delta_file decoded_new_file
-         (NOTE fix: xdelta3.1 diff "gcc-src..." fail, add -B 530000000 diff ok,
-           out 14173073B and used 1070MB memory!)
-=======================================================================================================
-   Program              diff       run time(Second)  memory(MB)    patch run time(Second) memory(MB)
-                  xdelta3   hdiffz   xdelta3 hdiffz xdelta3 hdiffz  xdelta3  hpatchz   xdelta3 hpatchz
--------------------------------------------------------------------------------------------------------
-apache-maven...   116265     83408     0.16   0.13     65    11       0.07    0.06        12      6
-httpd bin...     2174098   2077625     1.1    1.2     157    15       0.25    0.65        30      8
-httpd src...     2312990   2034666     1.3    1.7     185    15       0.30    0.91        50      8
-Firefox...      28451567  27504156    16     11       225    16       2.0     4.1        100      8
-emacs...        31655323  12033450    19      9.4     220    33       3.2     4.0         97     10
-eclipse          1590860   1636221     1.5    1.2     207    34       0.46    0.49        77      8 
-gcc-src...     107003829  12305741    56     19       224    79       9.7     9.5        102     11 
-           (fix 14173073)
--------------------------------------------------------------------------------------------------------
-Average           12.18%    7.81%     100%  79.0%     100%  15.5%      100%  169.1%      100%  18.9%
-              (fix 9.78%)
-=======================================================================================================
 
-HDiffPatch2.4 hdiffz run by: -s-64 -c-lzma-7-4m  oldFile newFile outDiffFile
-              hpatchz run by: -s-4m oldFile diffFile outNewFile
-xdelta3.1 diff run by: -S lzma -9 -s old_file new_file delta_file   
-          patch run by: -d -s old_file delta_file decoded_new_file
-          (NOTE fix: xdelta3.1 diff "gcc-src..." fail, add -B 530000000 diff ok,
-            out 11787978B and used 2639MB memory.)
-=======================================================================================================
-   Program              diff       run time(Second)  memory(MB)    patch run time(Second) memory(MB)
-                  xdelta3   hdiffz   xdelta3 hdiffz xdelta3 hdiffz  xdelta3  hpatchz   xdelta3 hpatchz
--------------------------------------------------------------------------------------------------------
-apache-maven...    98434     83668     0.37   0.29    220    24       0.04    0.06         12     5
-httpd bin...     1986880   1776553     2.5    2.9     356    59       0.24    0.52         30     8
-httpd src...     2057118   1794029     3.3    4.2     375    62       0.28    0.78         50     8
-Firefox...      27046727  21882343    27     32       416    76       1.8     2.2         100     9
-emacs...        29392254   9698236    38     32       413    97       3.1     2.9          97     9
-eclipse          1580342   1589045     3.0    1.9     399    76       0.48    0.48         77     6 
-gcc-src...      95991977   9118368   128     44       417   148       8.9     8.6         102    11 
-           (fix 11787978)
--------------------------------------------------------------------------------------------------------
-Average           11.24%    6.44%     100%  88.9%     100%  20.0%      100%  151.1%       100%  17.3%
-              (fix 9.06%)
-=======================================================================================================
+Compilation
+-------------------------
+For Linux/MacOS/MinGW (Windows):
 ```
-  
----
-## Contact
-housisong@gmail.com  
+make
+```
 
+For 32-bit compilation:
+```
+make BUILD_ARCH=32-bit
+
+```
+
+The default linking for Linux is dynamic and static for Windows. This can be changed with `make BUILD_STATIC=0/1`.
+
+To remove one of compressors you can add `-DBENCH_REMOVE_XXX` to `DEFINES` in Makefile (e.g. `DEFINES += -DBENCH_REMOVE_LZ4` to remove LZ4). 
+You also have to remove corresponding `*.o` files (e.g. `lz4/lz4.o` and `lz4/lz4hc.o`).
+
+lzbench was tested with:
+- Ubuntu: gcc 4.8 (both 32-bit and 64-bit), 4.9, 5 (32-bit and 64-bit), 6 (32-bit and 64-bit), 7, 8, 9 and clang 3.5, 3.6, 3.8, 3.9, 4.0, 5.0, 6.0, 7, 8, 9
+- MacOS: Apple LLVM version 9.1.0
+- MinGW (Windows): gcc 5.3 (32-bit), gcc 6.2 (both 32-bit and 64-bit), gcc 9.1
+
+
+
+Supported compressors
+-------------------------
+**Warning**: some of the compressors listed here have security issues and/or are 
+no longer maintained.  For information about the security of the various compressors, 
+see the [CompFuzz Results](https://github.com/nemequ/compfuzz/wiki/Results) page.
+
+ - [blosclz 2.0.0](https://github.com/Blosc/c-blosc2)
+ - [brieflz 1.3.0](https://github.com/jibsen/brieflz)
+ - [brotli 1.0.9](https://github.com/google/brotli)
+ - [bzip2 1.0.8](http://www.bzip.org/downloads.html)
+ - [crush 1.0](https://sourceforge.net/projects/crush/)
+ - [csc 2016-10-13](https://github.com/fusiyuan2010/CSC) - WARNING: it can throw SEGFAULT compiled with Apple LLVM version 7.3.0 (clang-703.0.31)
+ - [density 0.14.2](https://github.com/centaurean/density) - WARNING: it contains bugs (shortened decompressed output))
+ - [fastlz 0.5.0](http://fastlz.org)
+ - [fast-lzma2 1.0.1](https://github.com/conor42/fast-lzma2)
+ - [gipfeli 2016-07-13](https://github.com/google/gipfeli)
+ - [glza 0.8](https://encode.su/threads/2427-GLZA)
+ - [libdeflate v1.6](https://github.com/ebiggers/libdeflate)
+ - [lizard v1.0 (formerly lz5)](https://github.com/inikep/lizard)
+ - [lz4/lz4hc v1.9.3](https://github.com/lz4/lz4)
+ - [lzf 3.6](http://software.schmorp.de/pkg/liblzf.html)
+ - [lzfse/lzvn 1.0](https://github.com/lzfse/lzfse)
+ - [lzg 1.0.10](https://liblzg.bitsnbites.eu/)
+ - [lzham 1.0](https://github.com/richgel999/lzham_codec)
+ lzjb 2010
+ - [lzlib 1.12-rc2](http://www.nongnu.org/lzip)
+ - [lzma v19.00](http://7-zip.org)
+ - [lzmat 1.01 v1.0](https://github.com/nemequ/lzmat) - WARNING: it contains bugs (decompression error; returns 0); it can throw SEGFAULT compiled with gcc 4.9+ -O3
+ - [lzo 2.10](http://www.oberhumer.com/opensource/lzo)
+ - [lzrw 15-Jul-1991](https://en.wikipedia.org/wiki/LZRW)
+ - [lzsse 2019-04-18 (1847c3e827)](https://github.com/ConorStokes/LZSSE)
+ - [pithy 2011-12-24](https://github.com/johnezang/pithy) - WARNING: it contains bugs (decompression error; returns 0)
+ - [quicklz 1.5.0](http://www.quicklz.com)
+ - [shrinker 0.1](https://code.google.com/p/data-shrinker) - WARNING: it can throw SEGFAULT compiled with gcc 4.9+ -O3
+ - [slz 1.2.0](http://www.libslz.org/) - only a compressor, uses zlib for decompression
+ - [snappy 2020-07-11 (4dd277f)](https://github.com/google/snappy)
+ - [tornado 0.6a](http://freearc.org)
+ - [ucl 1.03](http://www.oberhumer.com/opensource/ucl/)
+ - [wflz 2015-09-16](https://github.com/ShaneWF/wflz) - WARNING: it can throw SEGFAULT compiled with gcc 4.9+ -O3
+ - [xpack 2016-06-02](https://github.com/ebiggers/xpack)
+ - [xz 5.2.4](https://tukaani.org/xz/)
+ - [yalz77 2015-09-19](https://github.com/ivan-tkatchev/yalz77)
+ - [yappy 2014-03-22](https://encode.su/threads/2825-Yappy-(working)-compressor) - WARNING: fails to decompress properly on ARM
+ - [zlib 1.2.11](http://zlib.net)
+ - [zling 2018-10-12](https://github.com/richox/libzling) - according to the author using libzling in a production environment is not a good idea
+ - [zstd 1.4.9](https://github.com/facebook/zstd)
+ - [nvcomp 1.2.2](https://github.com/NVIDIA/nvcomp) - If CUDA is available.
+
+
+CUDA support
+-------------------------
+
+If CUDA is available, lzbench supports additional compressors:
+  - [cudaMemcpy](https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gc263dbe6574220cc776b45438fc351e8) - similar to the reference `memcpy` benchmark, using GPU memory
+  - [nvcomp 1.2.2](https://github.com/NVIDIA/nvcomp) LZ4 GPU-only compressor
+
+The directory where the CUDA compiler and libraries are available can be passed to `make` via the `CUDA_BASE` variable, *e.g.*:
+```
+make CUDA_BASE=/usr/local/cuda
+```
+
+Benchmarks
+-------------------------
+
+The following results are obtained with `lzbench 1.8` with the `-t16,16 -eall` options using 1 core of Intel Core i7-8700K, Ubuntu 18.04.3 64-bit, and clang 9.0.1
+with ["silesia.tar"](https://drive.google.com/file/d/0BwX7dtyRLxThenZpYU9zLTZhR1k/view?usp=sharing) which contains tarred files from [Silesia compression corpus](http://sun.aei.polsl.pl/~sdeor/index.php?page=silesia).
+The results sorted by ratio are available [here](lzbench18_sorted.md).
+
+| Compressor name         | Compress.  |Decompress. | Compr. size | Ratio |
+| ---------------         | -----------| -----------| ----------- | ----- |
+| memcpy                  | 10362 MB/s | 10790 MB/s |   211947520 |100.00 |
+| bzip2 1.0.8 -1          |    18 MB/s |    52 MB/s |    60484813 | 28.54 |
+| bzip2 1.0.8 -5          |    16 MB/s |    44 MB/s |    55724395 | 26.29 |
+| bzip2 1.0.8 -9          |    15 MB/s |    41 MB/s |    54572811 | 25.75 |
+| lz4hc 1.9.2 -1          |   131 MB/s |  4071 MB/s |    83803769 | 39.54 |
+| lz4hc 1.9.2 -4          |    81 MB/s |  4210 MB/s |    79807909 | 37.65 |
+| lz4hc 1.9.2 -9          |    33 MB/s |  4378 MB/s |    77884448 | 36.75 |
+| lz4hc 1.9.2 -12         |    11 MB/s |  4427 MB/s |    77262620 | 36.45 |
+| lzma 19.00 -0           |    34 MB/s |    80 MB/s |    64013917 | 30.20 |
+| lzma 19.00 -2           |    25 MB/s |    91 MB/s |    58867911 | 27.77 |
+| lzma 19.00 -4           |    14 MB/s |    95 MB/s |    57201645 | 26.99 |
+| lzma 19.00 -5           |  3.28 MB/s |   103 MB/s |    49710307 | 23.45 |
+| lzma 19.00 -9           |  2.66 MB/s |   107 MB/s |    48707450 | 22.98 |
+| zlib 1.2.11 -1          |   119 MB/s |   383 MB/s |    77259029 | 36.45 |
+| zlib 1.2.11 -6          |    35 MB/s |   407 MB/s |    68228431 | 32.19 |
+| zlib 1.2.11 -9          |    14 MB/s |   404 MB/s |    67644548 | 31.92 |
