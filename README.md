@@ -1,10 +1,10 @@
 Introduction
 -------------------------
 
-lzbench is an in-memory benchmark of open-source LZ77/LZSS/LZMA compressors. It joins all compressors into a single exe. 
-At the beginning an input file is read to memory. 
-Then all compressors are used to compress and decompress the file and decompressed file is verified. 
-This approach has a big advantage of using the same compiler with the same optimizations for all compressors. 
+lzbench is an in-memory benchmark of open-source LZ77/LZSS/LZMA compressors. It joins all compressors into a single exe.
+At the beginning an input file is read to memory.
+Then all compressors are used to compress and decompress the file and decompressed file is verified.
+This approach has a big advantage of using the same compiler with the same optimizations for all compressors.
 The disadvantage is that it requires source code of each compressor (therefore Slug or lzturbo are not included).
 
 |Status   |
@@ -64,7 +64,7 @@ make BUILD_ARCH=32-bit
 
 The default linking for Linux is dynamic and static for Windows. This can be changed with `make BUILD_STATIC=0/1`.
 
-To remove one of compressors you can add `-DBENCH_REMOVE_XXX` to `DEFINES` in Makefile (e.g. `DEFINES += -DBENCH_REMOVE_LZ4` to remove LZ4). 
+To remove one of compressors you can add `-DBENCH_REMOVE_XXX` to `DEFINES` in Makefile (e.g. `DEFINES += -DBENCH_REMOVE_LZ4` to remove LZ4).
 You also have to remove corresponding `*.o` files (e.g. `lz4/lz4.o` and `lz4/lz4hc.o`).
 
 lzbench was tested with:
@@ -76,8 +76,8 @@ lzbench was tested with:
 
 Supported compressors
 -------------------------
-**Warning**: some of the compressors listed here have security issues and/or are 
-no longer maintained.  For information about the security of the various compressors, 
+**Warning**: some of the compressors listed here have security issues and/or are
+no longer maintained.  For information about the security of the various compressors,
 see the [CompFuzz Results](https://github.com/nemequ/compfuzz/wiki/Results) page.
 
  - [blosclz 2.0.0](https://github.com/Blosc/c-blosc2)
@@ -142,21 +142,21 @@ The following results are obtained with `lzbench 1.8` with the `-t16,16 -eall` o
 with ["silesia.tar"](https://drive.google.com/file/d/0BwX7dtyRLxThenZpYU9zLTZhR1k/view?usp=sharing) which contains tarred files from [Silesia compression corpus](http://sun.aei.polsl.pl/~sdeor/index.php?page=silesia).
 The results sorted by ratio are available [here](lzbench18_sorted.md).
 
-| Compressor name         | Compress.  |Decompress. | Compr. size | Ratio |
-| ---------------         | -----------| -----------| ----------- | ----- |
-| memcpy                  | 10362 MB/s | 10790 MB/s |   211947520 |100.00 |
-| bzip2 1.0.8 -1          |    18 MB/s |    52 MB/s |    60484813 | 28.54 |
-| bzip2 1.0.8 -5          |    16 MB/s |    44 MB/s |    55724395 | 26.29 |
-| bzip2 1.0.8 -9          |    15 MB/s |    41 MB/s |    54572811 | 25.75 |
-| lz4hc 1.9.2 -1          |   131 MB/s |  4071 MB/s |    83803769 | 39.54 |
-| lz4hc 1.9.2 -4          |    81 MB/s |  4210 MB/s |    79807909 | 37.65 |
-| lz4hc 1.9.2 -9          |    33 MB/s |  4378 MB/s |    77884448 | 36.75 |
-| lz4hc 1.9.2 -12         |    11 MB/s |  4427 MB/s |    77262620 | 36.45 |
-| lzma 19.00 -0           |    34 MB/s |    80 MB/s |    64013917 | 30.20 |
-| lzma 19.00 -2           |    25 MB/s |    91 MB/s |    58867911 | 27.77 |
-| lzma 19.00 -4           |    14 MB/s |    95 MB/s |    57201645 | 26.99 |
-| lzma 19.00 -5           |  3.28 MB/s |   103 MB/s |    49710307 | 23.45 |
-| lzma 19.00 -9           |  2.66 MB/s |   107 MB/s |    48707450 | 22.98 |
-| zlib 1.2.11 -1          |   119 MB/s |   383 MB/s |    77259029 | 36.45 |
-| zlib 1.2.11 -6          |    35 MB/s |   407 MB/s |    68228431 | 32.19 |
-| zlib 1.2.11 -9          |    14 MB/s |   404 MB/s |    67644548 | 31.92 |
+| Compressor name         | Compress.  |Decompress. | Ratio |
+| ---------------         | -----------| -----------| ----- |
+| memcpy                  | 10362 MB/s | 10790 MB/s |100.00 |
+| bzip2 1.0.8 -1          |    18 MB/s |    52 MB/s | 28.54 |
+| bzip2 1.0.8 -5          |    16 MB/s |    44 MB/s | 26.29 |
+| bzip2 1.0.8 -9          |    15 MB/s |    41 MB/s | 25.75 |
+| lz4hc 1.9.2 -1          |   131 MB/s |  4071 MB/s | 39.54 |
+| lz4hc 1.9.2 -4          |    81 MB/s |  4210 MB/s | 37.65 |
+| lz4hc 1.9.2 -9          |    33 MB/s |  4378 MB/s | 36.75 |
+| lz4hc 1.9.2 -12         |    11 MB/s |  4427 MB/s | 36.45 |
+| lzma 19.00 -0           |    34 MB/s |    80 MB/s | 30.20 |
+| lzma 19.00 -2           |    25 MB/s |    91 MB/s | 27.77 |
+| lzma 19.00 -4           |    14 MB/s |    95 MB/s | 26.99 |
+| lzma 19.00 -5           |  3.28 MB/s |   103 MB/s | 23.45 |
+| lzma 19.00 -9           |  2.66 MB/s |   107 MB/s | 22.98 |
+| zlib 1.2.11 -1          |   119 MB/s |   383 MB/s | 36.45 |
+| zlib 1.2.11 -6          |    35 MB/s |   407 MB/s | 32.19 |
+| zlib 1.2.11 -9          |    14 MB/s |   404 MB/s | 31.92 |
